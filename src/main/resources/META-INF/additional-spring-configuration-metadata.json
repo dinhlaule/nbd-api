@@ -1,0 +1,18 @@
+{
+  "properties": [
+    {
+      "name": "sysId",
+      "type": "java.lang.String",
+      "description": "Description for sysId."
+    },
+    {
+      "name": "remote.host",
+      "type": "java.lang.String",
+      "description": "Description for remote.host."
+    },
+    {
+      "name": "water.level.file.out",
+      "type": "java.lang.String",
+      "description": "Description for water.level.file.out."
+    }
+  ] }

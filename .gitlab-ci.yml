@@ -1,0 +1,45 @@
+stages:
+  - build
+  - docker build
+  - deploy
+
+maven-build:
+  stage: build
+  image: maven:3.8.1-jdk-8
+  script:
+    - mvn clean package
+  artifacts:
+    paths:
+      - target/*.jar
+  only:
+    - dev
+
+docker-build-job:
+  stage: docker build
+  image: docker:20.10.9
+  services:
+    - docker:20.10.9-dind
+  script:
+    - docker build -t nbd-api .
+#    - docker logout
+#    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
+#    - docker tag nbd-api $DOCKER_USER/nbd-api
+#    - docker push $DOCKER_USER/nbd-api
+  only:
+    - dev
+
+deploy-job:
+  stage: deploy
+  image: ubuntu:latest
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY"
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  script:
+    - ssh root@10.252.10.155 "cd /app/nbd-api; docker-compose up -d nbd-api"
+  only:
+    - dev
